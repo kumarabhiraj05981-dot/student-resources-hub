@@ -9,7 +9,7 @@ Students can explore notes, previous year questions, syllabus, ebooks, use AI-po
 ## 🚀 Live Demo
 
 🌐 **Frontend:**  
-https://student-resources-hub-production-k5rk8wlwq.vercel.app/login
+ https://studentresourceshub.vercel.app/login
 
 ---
 
