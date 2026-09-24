@@ -15,6 +15,7 @@ import StudyPlanner from "./pages/StudyPlanner";
 import Bookmarks from "./pages/Bookmarks";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import Quiz from "./pages/Quiz";
 
 function App() {
   return (
@@ -80,6 +81,8 @@ function App() {
           element={<Profile />}
         />
       </Routes>
+
+      <Route path="/quiz" element={<Quiz />} />
     </BrowserRouter>
   );
 }

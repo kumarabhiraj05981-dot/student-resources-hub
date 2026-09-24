@@ -67,6 +67,11 @@ const studyLinks = [
     path: "/study-planner",
     description: "Plan your study schedule",
   },
+  {
+    name: "Online Quiz",
+    path: "/quiz",
+    description: "Test your technical knowledge",
+  },
 ];
 
 type Notification = {
@@ -227,7 +232,9 @@ export default function Navbar() {
         )
       );
 
-      setUnreadCount((previous) => Math.max(previous - 1, 0));
+      setUnreadCount((previous) =>
+        Math.max(previous - 1, 0)
+      );
     } catch (error) {
       console.error(
         "MARK NOTIFICATION READ ERROR:",
@@ -314,7 +321,10 @@ export default function Navbar() {
         )
       );
 
-      if (deletedNotification && !deletedNotification.isRead) {
+      if (
+        deletedNotification &&
+        !deletedNotification.isRead
+      ) {
         setUnreadCount((previous) =>
           Math.max(previous - 1, 0)
         );
@@ -337,7 +347,7 @@ export default function Navbar() {
     setNotificationOpen(false);
 
     if (notification.resource?._id) {
-      navigate(`/bookmarks`);
+      navigate("/bookmarks");
     }
   };
 
@@ -351,7 +361,8 @@ export default function Navbar() {
     }
 
     const now = new Date();
-    const difference = now.getTime() - date.getTime();
+    const difference =
+      now.getTime() - date.getTime();
 
     const seconds = Math.floor(difference / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -381,14 +392,14 @@ export default function Navbar() {
     type: Notification["type"]
   ) => {
     if (type === "announcement") {
-      return "📢";
+      return "";
     }
 
     if (type === "system") {
-      return "⚙️";
+      return "";
     }
 
-    return "📚";
+    return "";
   };
 
   const closeMobileMenu = () => {
