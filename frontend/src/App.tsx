@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -80,9 +81,13 @@ function App() {
           path="/profile"
           element={<Profile />}
         />
-      </Routes>
 
-      <Route path="/quiz" element={<Quiz />} />
+        {/* Quiz */}
+        <Route
+          path="/quiz"
+          element={<Quiz />}
+        />
+      </Routes>
     </BrowserRouter>
   );
 }
