@@ -1,8 +1,14 @@
+
 import {
   useState,
   type FormEvent,
 } from "react";
-import { Link, useNavigate } from "react-router-dom";
+
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
 import api from "../services/api";
 
 interface User {
@@ -77,10 +83,6 @@ export default function Login() {
         JSON.stringify(user)
       );
 
-      /*
-       * Keep remember-me preference available
-       * for future authentication improvements.
-       */
       localStorage.setItem(
         "rememberMe",
         String(rememberMe)
@@ -90,9 +92,11 @@ export default function Login() {
         new Event("auth-change")
       );
 
-      navigate("/", {
+      // Login successful: Redirect to Home
+      navigate("/home", {
         replace: true,
       });
+
     } catch (err: any) {
       console.error(
         "LOGIN ERROR:",
@@ -105,6 +109,7 @@ export default function Login() {
         "Login failed. Please try again.";
 
       setError(message);
+
     } finally {
       setLoading(false);
     }
@@ -112,6 +117,7 @@ export default function Login() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 px-4 py-8 sm:px-6 lg:px-8">
+
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
 
         <div className="grid w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-2xl lg:grid-cols-[0.9fr_1.1fr]">
@@ -120,13 +126,14 @@ export default function Login() {
           <section className="relative hidden overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-700 to-violet-800 p-10 text-white lg:flex lg:flex-col lg:justify-between">
 
             <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-white/10" />
+
             <div className="absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-white/10" />
 
             <div className="relative z-10">
 
-              {/* LOGO */}
+              {/* LOGO - CLICK TO HOME */}
               <Link
-                to="/"
+                to="/home"
                 className="inline-flex items-center gap-3"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-sm font-black text-blue-700 shadow-lg">
@@ -152,6 +159,7 @@ export default function Login() {
 
                 <h1 className="text-4xl font-black leading-tight xl:text-5xl">
                   Everything you need to
+
                   <span className="block text-blue-200">
                     study better.
                   </span>
@@ -163,41 +171,31 @@ export default function Login() {
                   your personalized study resources from
                   one place.
                 </p>
+
               </div>
             </div>
 
             {/* FEATURES */}
             <div className="relative z-10 mt-12 space-y-3">
 
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 font-bold">
-                  ✓
-                </span>
+              {[
+                "Notes & study materials",
+                "PYQs & syllabus resources",
+                "AI-powered study tools",
+              ].map((feature) => (
+                <div
+                  key={feature}
+                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 font-bold">
+                    ✓
+                  </span>
 
-                <span className="text-sm font-semibold text-blue-50">
-                  Notes & study materials
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 font-bold">
-                  ✓
-                </span>
-
-                <span className="text-sm font-semibold text-blue-50">
-                  PYQs & syllabus resources
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 font-bold">
-                  ✓
-                </span>
-
-                <span className="text-sm font-semibold text-blue-50">
-                  AI-powered study tools
-                </span>
-              </div>
+                  <span className="text-sm font-semibold text-blue-50">
+                    {feature}
+                  </span>
+                </div>
+              ))}
 
             </div>
           </section>
@@ -208,19 +206,24 @@ export default function Login() {
             {/* MOBILE BRAND */}
             <div className="mb-8 flex items-center gap-3 lg:hidden">
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-md">
-                SR
-              </div>
-
-              <div>
-                <div className="text-base font-extrabold text-gray-900">
-                  Student Resources
+              <Link
+                to="/home"
+                className="flex items-center gap-3"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-md">
+                  SR
                 </div>
 
-                <div className="text-xs font-medium text-gray-500">
-                  Study smarter. Prepare better.
+                <div>
+                  <div className="text-base font-extrabold text-gray-900">
+                    Student Resources
+                  </div>
+
+                  <div className="text-xs font-medium text-gray-500">
+                    Study smarter. Prepare better.
+                  </div>
                 </div>
-              </div>
+              </Link>
 
             </div>
 
@@ -306,7 +309,6 @@ export default function Login() {
                   />
 
                 </div>
-
               </div>
 
               {/* PASSWORD */}
@@ -324,9 +326,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() =>
-                      setShowPassword(
-                        (previous) => !previous
-                      )
+                      setShowPassword((previous) => !previous)
                     }
                     className="text-xs font-bold text-blue-600 transition hover:text-blue-800"
                   >
@@ -345,11 +345,7 @@ export default function Login() {
 
                   <input
                     id="password"
-                    type={
-                      showPassword
-                        ? "text"
-                        : "password"
-                    }
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
@@ -363,7 +359,6 @@ export default function Login() {
                   />
 
                 </div>
-
               </div>
 
               {/* REMEMBER ME */}
@@ -375,9 +370,7 @@ export default function Login() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) =>
-                      setRememberMe(
-                        e.target.checked
-                      )
+                      setRememberMe(e.target.checked)
                     }
                     className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
@@ -448,7 +441,7 @@ export default function Login() {
 
             {/* BACK HOME */}
             <Link
-              to="/"
+              to="/home"
               className="mt-5 block text-center text-sm font-semibold text-gray-500 transition hover:text-blue-600"
             >
               ← Back to Student Resources Hub
