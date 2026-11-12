@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 
@@ -53,9 +54,7 @@ const upload = multer({
       file.originalname.toLowerCase().endsWith(".pdf");
 
     if (!isPDF) {
-      return cb(
-        new Error("Only PDF files are allowed")
-      );
+      return cb(new Error("Only PDF files are allowed"));
     }
 
     cb(null, true);
@@ -74,8 +73,7 @@ router.get("/test", (req, res) => {
 });
 
 // ==========================================
-// UPLOAD PDF
-// ADMIN ONLY
+// UPLOAD PDF - ADMIN ONLY
 // ==========================================
 
 router.post(
@@ -85,15 +83,9 @@ router.post(
 
   async (req, res) => {
     try {
-      console.log(
-        "======================================"
-      );
-
-      console.log("📤 RESOURCE UPLOAD REQUEST");
-
-      console.log(
-        "======================================"
-      );
+      console.log("======================================");
+      console.log("RESOURCE UPLOAD REQUEST");
+      console.log("======================================");
 
       console.log("BODY:", req.body);
       console.log("FILE:", req.file?.originalname);
@@ -124,17 +116,28 @@ router.post(
       } = req.body;
 
       // ======================================
-      // TITLE VALIDATION
+      // AUTOMATIC RESOURCE TITLE
       // ======================================
 
-      if (!title || !title.trim()) {
-        return res.status(400).json({
-          success: false,
-          message: "Resource title is required",
-        });
-      }
+      const originalFileName = req.file.originalname;
 
-      const cleanTitle = title.trim();
+      const extension = path.extname(originalFileName).toLowerCase();
+
+      const nameWithoutExtension = path.basename(
+        originalFileName,
+        extension
+      );
+
+      // If admin enters a title, use it.
+      // Otherwise, generate title from PDF filename.
+
+      const cleanTitle =
+        typeof title === "string" && title.trim()
+          ? title.trim()
+          : nameWithoutExtension
+              .replace(/[-_]/g, " ")
+              .replace(/\s+/g, " ")
+              .trim() || "Study Material";
 
       // ======================================
       // BRANCH VALIDATION
@@ -192,61 +195,35 @@ router.post(
       }
 
       // ======================================
-      // SUBJECT
+      // SUBJECT AND DESCRIPTION
       // ======================================
 
-      const cleanSubject = subject
-        ? subject.trim()
-        : "";
+      const cleanSubject =
+        typeof subject === "string" ? subject.trim() : "";
 
-      // ======================================
-      // DESCRIPTION
-      // ======================================
-
-      const cleanDescription = description
-        ? description.trim()
-        : "";
-
-      // ======================================
-      // ORIGINAL FILE NAME
-      // ======================================
-
-      const originalFileName =
-        req.file.originalname;
-
-      const extension =
-        path.extname(originalFileName).toLowerCase();
-
-      const nameWithoutExtension =
-        path.basename(
-          originalFileName,
-          extension
-        );
+      const cleanDescription =
+        typeof description === "string"
+          ? description.trim()
+          : "";
 
       // ======================================
       // SAFE FILE NAME
       // ======================================
 
-      const cleanFileName =
-        nameWithoutExtension
-          .replace(/[^a-zA-Z0-9-_ ]/g, "")
-          .trim()
-          .replace(/\s+/g, "-");
+      const cleanFileName = nameWithoutExtension
+        .replace(/[^a-zA-Z0-9-_ ]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
 
-      const safeFileName =
-        cleanFileName || "resource";
+      const safeFileName = cleanFileName || "resource";
 
       // ======================================
       // UNIQUE CLOUDINARY PUBLIC ID
       // ======================================
 
-      const publicId =
-        `${safeFileName}-${Date.now()}`;
+      const publicId = `${safeFileName}-${Date.now()}`;
 
-      console.log(
-        "--------------------------------------"
-      );
-
+      console.log("--------------------------------------");
       console.log("TITLE:", cleanTitle);
       console.log("BRANCH:", cleanBranch);
       console.log("SEMESTER:", cleanSemester);
@@ -254,39 +231,31 @@ router.post(
       console.log("SUBJECT:", cleanSubject);
       console.log("FILE:", originalFileName);
       console.log("PUBLIC ID:", publicId);
-
-      console.log(
-        "--------------------------------------"
-      );
+      console.log("--------------------------------------");
 
       // ======================================
-      // CLOUDINARY UPLOAD PDF
+      // CLOUDINARY PDF UPLOAD
       // ======================================
 
       const uploadToCloudinary = () => {
         return new Promise((resolve, reject) => {
-          const stream =
-            cloudinary.uploader.upload_stream(
-              {
-                folder: "student-resources",
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder: "student-resources",
+              resource_type: "image",
+              public_id: publicId,
+              format: "pdf",
+              overwrite: false,
+            },
 
-                resource_type: "image",
-
-                public_id: publicId,
-
-                format: "pdf",
-
-                overwrite: false,
-              },
-
-              (error, result) => {
-                if (error) {
-                  reject(error);
-                } else {
-                  resolve(result);
-                }
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
               }
-            );
+            }
+          );
 
           stream.end(req.file.buffer);
         });
@@ -299,8 +268,7 @@ router.post(
       let cloudinaryResult;
 
       try {
-        cloudinaryResult =
-          await uploadToCloudinary();
+        cloudinaryResult = await uploadToCloudinary();
       } catch (cloudinaryError) {
         console.error(
           "CLOUDINARY UPLOAD ERROR:",
@@ -309,8 +277,8 @@ router.post(
 
         return res.status(500).json({
           success: false,
-          message:
-            "Failed to upload PDF to Cloudinary",
+          message: "Failed to upload PDF to Cloudinary",
+          error: cloudinaryError.message,
         });
       }
 
@@ -318,59 +286,35 @@ router.post(
       // CHECK CLOUDINARY RESULT
       // ======================================
 
-      if (
-        !cloudinaryResult ||
-        !cloudinaryResult.secure_url
-      ) {
+      if (!cloudinaryResult || !cloudinaryResult.secure_url) {
         return res.status(500).json({
           success: false,
           message: "Cloudinary upload failed",
         });
       }
 
-      console.log(
-        "CLOUDINARY URL:",
-        cloudinaryResult.secure_url
-      );
-
-      console.log(
-        "CLOUDINARY PUBLIC ID:",
-        cloudinaryResult.public_id
-      );
+      console.log("CLOUDINARY URL:", cloudinaryResult.secure_url);
+      console.log("CLOUDINARY PUBLIC ID:", cloudinaryResult.public_id);
+      console.log("RESOURCE TYPE:", cloudinaryResult.resource_type);
 
       // ======================================
       // CREATE MONGODB RESOURCE
       // ======================================
 
-      const resource =
-        new Resource({
-          title: cleanTitle,
+      const resource = new Resource({
+        title: cleanTitle,
+        description: cleanDescription,
+        branch: cleanBranch,
+        semester: cleanSemester,
+        category: cleanCategory,
+        subject: cleanSubject,
 
-          description: cleanDescription,
+        fileUrl: cloudinaryResult.secure_url,
 
-          branch: cleanBranch,
-
-          semester: cleanSemester,
-
-          category: cleanCategory,
-
-          subject: cleanSubject,
-
-          fileUrl:
-            cloudinaryResult.secure_url.replace(
-              "/upload/",
-              "/upload/fl_attachment:false/"
-            ),
-
-          filePublicId:
-            cloudinaryResult.public_id,
-
-          fileName:
-            originalFileName,
-
-          uploadedBy:
-            req.user?._id,
-        });
+        filePublicId: cloudinaryResult.public_id,
+        fileName: originalFileName,
+        uploadedBy: req.user?._id,
+      });
 
       // ======================================
       // SAVE TO MONGODB
@@ -378,114 +322,52 @@ router.post(
 
       await resource.save();
 
-      console.log(
-        "======================================"
-      );
-
-      console.log(
-        "✅ RESOURCE SAVED SUCCESSFULLY"
-      );
-
-      console.log(
-        "RESOURCE ID:",
-        resource._id
-      );
-
-      console.log(
-        "BRANCH:",
-        resource.branch
-      );
-
-      console.log(
-        "SEMESTER:",
-        resource.semester
-      );
-
-      console.log(
-        "CATEGORY:",
-        resource.category
-      );
-
-      console.log(
-        "======================================"
-      );
+      console.log("======================================");
+      console.log("RESOURCE SAVED SUCCESSFULLY");
+      console.log("RESOURCE ID:", resource._id);
+      console.log("======================================");
 
       // ======================================
       // CREATE SMART NOTIFICATIONS
       // ======================================
 
       try {
-        console.log(
-          "🔔 CREATING SMART RESOURCE NOTIFICATIONS..."
-        );
+        console.log("CREATING SMART RESOURCE NOTIFICATIONS...");
 
-        console.log(
-          "🎯 TARGET BRANCH:",
-          resource.branch
-        );
+        const students = await User.find({
+          role: { $ne: "admin" },
+          branch: resource.branch,
+          semester: resource.semester,
+        }).select("_id name email branch semester");
 
-        console.log(
-          "🎯 TARGET SEMESTER:",
-          resource.semester
-        );
-
-        // ====================================
-        // FIND ONLY MATCHING STUDENTS
-        // ====================================
-
-        const students =
-          await User.find({
-            role: { $ne: "admin" },
-
-            branch: resource.branch,
-
-            semester: resource.semester,
-          }).select("_id name email branch semester");
-
-        console.log(
-          `🎯 MATCHING STUDENTS FOUND: ${students.length}`
-        );
+        console.log(`MATCHING STUDENTS FOUND: ${students.length}`);
 
         if (students.length > 0) {
-          const notifications =
-            students.map((student) => ({
-              user: student._id,
+          const notifications = students.map((student) => ({
+            user: student._id,
 
-              title:
-                `New ${resource.category || "Resource"} Added`,
+            title: `New ${resource.category || "Resource"} Added`,
 
-              message:
-                `${resource.title} has been added for ${resource.branch}, ${resource.semester}.`,
+            message: `${resource.title} has been added for ${resource.branch}, ${resource.semester}.`,
 
-              type: "resource",
+            type: "resource",
 
-              resource: resource._id,
+            resource: resource._id,
 
-              isRead: false,
-            }));
+            isRead: false,
+          }));
 
-          await Notification.insertMany(
-            notifications
-          );
+          await Notification.insertMany(notifications);
 
           console.log(
-            `🔔 SMART NOTIFICATIONS CREATED FOR ${students.length} MATCHING STUDENTS`
+            `SMART NOTIFICATIONS CREATED FOR ${students.length} STUDENTS`
           );
-
-          students.forEach((student) => {
-            console.log(
-              `   👤 ${student.name || "Student"} | ${student.email} | ${student.branch} | ${student.semester}`
-            );
-          });
         } else {
-          console.log(
-            "ℹ️ NO MATCHING STUDENTS FOUND FOR THIS RESOURCE"
-          );
+          console.log("NO MATCHING STUDENTS FOUND");
         }
       } catch (notificationError) {
-        // Notification fail hone par upload fail nahi hoga
         console.error(
-          "❌ NOTIFICATION CREATION ERROR:",
+          "NOTIFICATION CREATION ERROR:",
           notificationError
         );
       }
@@ -496,34 +378,16 @@ router.post(
 
       return res.status(201).json({
         success: true,
-
-        message:
-          "PDF uploaded successfully!",
-
+        message: "PDF uploaded successfully!",
         resource,
       });
 
     } catch (error) {
-      console.error(
-        "======================================"
-      );
-
-      console.error(
-        "❌ RESOURCE UPLOAD ERROR:"
-      );
-
-      console.error(error);
-
-      console.error(
-        "======================================"
-      );
+      console.error("RESOURCE UPLOAD ERROR:", error);
 
       return res.status(500).json({
         success: false,
-
-        message:
-          error.message ||
-          "PDF upload failed",
+        message: error.message || "PDF upload failed",
       });
     }
   }

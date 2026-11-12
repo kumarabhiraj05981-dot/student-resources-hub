@@ -1,5 +1,4 @@
-
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
 import Notes from "./pages/Notes";
@@ -22,71 +21,33 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Home */}
         <Route path="/" element={<Home />} />
 
-        {/* Resources */}
+        <Route path="/home" element={<Navigate to="/" replace />} />
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
         <Route path="/notes" element={<Notes />} />
         <Route path="/pyq" element={<Pyq />} />
         <Route path="/syllabus" element={<Syllabus />} />
         <Route path="/ebooks" element={<Ebooks />} />
 
-        {/* Branch Resources */}
-        <Route
-          path="/branch-resources"
-          element={<BranchResources />}
-        />
+        <Route path="/branch-resources" element={<BranchResources />} />
+        <Route path="/branch-resources/:branchId" element={<BranchResources />} />
 
-        <Route
-          path="/branch-resources/:branchId"
-          element={<BranchResources />}
-        />
-
-        {/* Authentication */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        {/* Admin */}
         <Route path="/admin" element={<Admin />} />
 
-        {/* AI Features */}
-        <Route
-          path="/ai-question-paper"
-          element={<AIQuestionPaper />}
-        />
+        <Route path="/ai-question-paper" element={<AIQuestionPaper />} />
+        <Route path="/study-assistant" element={<StudyAssistant />} />
+        <Route path="/study-planner" element={<StudyPlanner />} />
 
-        <Route
-          path="/study-assistant"
-          element={<StudyAssistant />}
-        />
+        <Route path="/bookmarks" element={<Bookmarks />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/quiz" element={<Quiz />} />
 
-        {/* Study Planner */}
-        <Route
-          path="/study-planner"
-          element={<StudyPlanner />}
-        />
-
-        {/* User Features */}
-        <Route
-          path="/bookmarks"
-          element={<Bookmarks />}
-        />
-
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-
-        <Route
-          path="/profile"
-          element={<Profile />}
-        />
-
-        {/* Quiz */}
-        <Route
-          path="/quiz"
-          element={<Quiz />}
-        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
